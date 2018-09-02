@@ -1,0 +1,28 @@
+{
+  "name": "@levarne/awslambdahelper",
+  "version": "0.0.4",
+  "description": "An npm module with basic functions for AWS Lambda ",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LeVarneBV/AWSLambdaHelper.git"
+  },
+  "keywords": [
+    "AWS",
+    "Lambda",
+    "API Gateway"
+  ],
+  "author": "Raymond van der Straten <raymond@levarne.nl> (http://levarne.com/)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/LeVarneBV/AWSLambdaHelper/issues"
+  },
+  "homepage": "https://github.com/LeVarneBV/AWSLambdaHelper#readme",
+  "dependencies": {
+    "aws-sdk": "^2.307.0",
+    "aws-xray-sdk": "^2.0.0"
+  }
+}
