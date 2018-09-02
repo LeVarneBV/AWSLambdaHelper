@@ -46,6 +46,7 @@ module.exports = {
       body: JSON.stringify(body)
     }
 
+    console.info('Response:', JSON.stringify(response, null, 2));
     console.timeEnd(functionName);
 
     if (statusCode >= 500) {
@@ -79,7 +80,7 @@ module.exports = {
         if (payload.statusCode >= 200 && payload.statusCode < 300) {
           callback(undefined, body);
         } else {
-          callback(undefined);
+          callback(body);
         }
       }
     });
