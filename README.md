@@ -20,7 +20,7 @@ For body params: ``REQUIRED_BODY_PARAMS=myRequiredBodyParam1,myRequiredBodyParam
 
 If you want to use the logError method to send error logs to a cloudwatch log group, set the cloudwatch log group name in your environment variables: ``CW_LOG_GROUP_NAME=myLogGroupName``
 
-Currently, there are 5 available functions:
+Currently, there are 6 available functions:
 
 **Init method:**
 
@@ -29,6 +29,23 @@ awsLambdaHelper.init(event, context, callback);
 ```
 
 The init function will parse the event.body(if any body is available and the available body is a string). It will also log the event as well as the context. Furthermore, this will start tracking time. If there is a password key in the body, this will be logged as *****. If there are required header and/or body parameters available in the environment variables, the init function will check if those parameters are send with the request. **If you use the init method, always use the callbackResponse() method for your lambda function.**
+
+**Invoke lambda:**
+
+```
+awsLambdaHelper.invokeLambda(functionName, payload, callback, optionalParameters);
+```
+
+The invoke lambda method will invoke the lambda with the specified named, the stage is automatically added(so if your function is called 'my_lambda-development', invoking 'my_lambda' will automatically point to the current stage). If an error occured invoking lambda, it will be logged. If the response status code is not 2XX, the error callback will be unempty.
+
+**Callback response method:**
+
+```
+awsLambdaHelper.callbackResponse(statusCode, body, callback);
+```
+
+The callback response method will return a correct API Gateway response. It will also log the response, finish time tracking and send any available logs to cloudwatch.
+
 
 **Log error method:**
 
@@ -59,14 +76,6 @@ This will send a log object to the log group, below is an example where an AWS s
   }
 }
 ```
-
-**Callback response method:**
-
-```
-awsLambdaHelper.callbackResponse(statusCode, body, event, context, callback);
-```
-
-The callback response method will return a correct API Gateway response. It will also log the response, finish time tracking and send any available logs to cloudwatch.
 
 **Get environment method:**
 

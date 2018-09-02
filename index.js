@@ -3,6 +3,7 @@ const AWS = AWSXRay.captureAWS(require('aws-sdk'));
 const async = require('async');
 const uuidv4 = require('uuid/v4');
 const cloudwatchlogs = new AWS.CloudWatchLogs();
+const lambda = new AWS.Lambda();
 
 const functionName = process.env.AWS_LAMBDA_FUNCTION_NAME ? process.env.AWS_LAMBDA_FUNCTION_NAME : 'local-' + (process.env.AWS_ENVIRONMENT ? process.env.AWS_ENVIRONMENT : 'local');
 const environment = functionName.split('-')[1];
@@ -54,6 +55,34 @@ module.exports = {
     }
 
     postMessages();
+  },
+
+  invokeLambda: function(functionName, payload, callback, optionalParameters) {
+    var params = {
+      FunctionName: functionName + '-' + environment,
+      Payload: JSON.stringify(payload)
+    };
+
+    if (optionalParameters) {
+      params = Object.assign({}, params, optionalParameters);
+    }
+
+    lambda.invoke(params, function(err, result) {
+      if (err) {
+        console.log('Error invoking ' + params.FunctionName);
+        console.log(JSON.stringify(err, null, 2));
+        module.exports.logError(err);
+        callback(err);
+      } else {
+        var payload = JSON.parse(result.Payload);
+        var body = JSON.parse(payload.body);
+        if (payload.statusCode >= 200 && payload.statusCode < 300) {
+          callback(undefined, body);
+        } else {
+          callback(undefined);
+        }
+      }
+    });
   },
 
   logError: function(error, options) {
