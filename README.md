@@ -20,6 +20,8 @@ For body params: ``REQUIRED_BODY_PARAMS=myRequiredBodyParam1,myRequiredBodyParam
 
 If you want to use the logError method to send error logs to a cloudwatch log group, set the cloudwatch log group name in your environment variables: ``CW_LOG_GROUP_NAME=myLogGroupName``
 
+**Note: The log group name should end with -environment. e.g. myApplication-development**
+
 Currently, there are 6 available functions:
 
 **Init method:**

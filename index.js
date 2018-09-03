@@ -9,7 +9,7 @@ const functionName = process.env.AWS_LAMBDA_FUNCTION_NAME ? process.env.AWS_LAMB
 const environment = functionName.split('-')[1];
 const requiredHeaderParams = process.env.REQUIRED_HEADER_PARAMS ? process.env.REQUIRED_HEADER_PARAMS.split(',') : [];
 const requiredBodyParams = process.env.REQUIRED_BODY_PARAMS ? process.env.REQUIRED_BODY_PARAMS.split(',') : [];
-const logGroupName = process.env.CW_LOG_GROUP_NAME ? process.env.CW_LOG_GROUP_NAME : undefined;
+const logGroupName = process.env.CW_LOG_GROUP_NAME ? process.env.CW_LOG_GROUP_NAME + '-' + environment : undefined;
 
 var logEvent;
 var logContext;
