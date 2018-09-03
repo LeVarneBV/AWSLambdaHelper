@@ -76,7 +76,10 @@ module.exports = {
         callback(err);
       } else {
         var payload = JSON.parse(result.Payload);
-        var body = JSON.parse(payload.body);
+        var body;
+        if (payload.body) {
+          body = JSON.parse(payload.body);
+        }
         if (payload.statusCode >= 200 && payload.statusCode < 300) {
           callback(undefined, body);
         } else {
