@@ -173,7 +173,7 @@ var checkValues = function(params, values, callback) {
   async.each(params, function(param, callback) {
     if(!isValue(values[param])) {
       var error = {
-        statusCode: 'InvalidParameterException',
+        code: 'InvalidParameterException',
         message: param + ' is required',
         statusCode: 400
       }
