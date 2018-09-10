@@ -4,6 +4,8 @@ const async = require('async');
 const uuidv4 = require('uuid/v4');
 const cloudwatchlogs = new AWS.CloudWatchLogs();
 const lambda = new AWS.Lambda();
+const http = AWSXRay.captureHTTPs(require('http'));
+const https = AWSXRay.captureHTTPs(require('https'));
 
 const functionName = process.env.AWS_LAMBDA_FUNCTION_NAME ? process.env.AWS_LAMBDA_FUNCTION_NAME : 'local-' + (process.env.AWS_ENVIRONMENT ? process.env.AWS_ENVIRONMENT : 'local');
 const environment = functionName.split('-')[1];
@@ -75,15 +77,19 @@ module.exports = {
         module.exports.logError(err);
         callback(err);
       } else {
-        var payload = JSON.parse(result.Payload);
-        var body;
-        if (payload.body) {
-          body = JSON.parse(payload.body);
-        }
-        if (payload.statusCode >= 200 && payload.statusCode < 300) {
-          callback(undefined, body);
+        if (!result.Payload) {
+          callback();
         } else {
-          callback(body);
+          var payload = JSON.parse(result.Payload);
+          var body;
+          if (payload.body) {
+            body = JSON.parse(payload.body);
+          }
+          if (payload.statusCode >= 200 && payload.statusCode < 300) {
+            callback(undefined, body);
+          } else {
+            callback(body);
+          }
         }
       }
     });
@@ -109,13 +115,108 @@ module.exports = {
     logMessages.push(logMessage);
   },
 
+  httpsRequest: function(options, data, callback) {
+    var req = https.request(options, function(res) {
+
+      var body = '';
+      res.on('data', function(data) {
+        body += data;
+      });
+
+      res.on('end', function() {
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          callback(undefined, body);
+        } else {
+          var error = {
+            code: 'UnexpectedLambdaException',
+            message: body,
+            statusCode: res.statusCode
+          }
+          callback(error);
+        }
+      });
+
+    });
+
+    req.on('error', function(err) {
+      console.log('Error requesting api');
+      console.log(JSON.stringify(err, null, 2));
+      module.exports.logError(err);
+      var error = {
+        code: 'UnexpectedLambdaException',
+        message: 'An unexpected error occured, try again later or contact support',
+        statusCode: 500
+      }
+      callback(error);
+    });
+
+    if (data) {
+      req.write(data);
+    }
+
+    req.end();
+  },
+
+  httpRequest: function(options, data, callback) {
+    var req = http.request(options, function(res) {
+
+      var body = '';
+      res.on('data', function(data) {
+        body += data;
+      });
+
+      res.on('end', function() {
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          callback(undefined, body);
+        } else {
+          var error = {
+            code: 'UnexpectedLambdaException',
+            message: body,
+            statusCode: res.statusCode
+          }
+          callback(error);
+        }
+      });
+
+    });
+
+    req.on('error', function(err) {
+      console.log('Error requesting api');
+      console.log(JSON.stringify(err, null, 2));
+      module.exports.logError(err);
+      var error = {
+        code: 'UnexpectedLambdaException',
+        message: 'An unexpected error occured, try again later or contact support',
+        statusCode: 500
+      }
+      callback(error);
+    });
+
+    if (data) {
+      req.write(data);
+    }
+
+    req.end();
+  },
+
+  startXRayRec: function(name, callback) {
+    AWSXRay.captureAsyncFunc(name, function(subsegment) {
+      var recorder = new XRayRecorder(name, subsegment);
+      callback(undefined, recorder);
+    });
+  },
+
   getEnvironment: function() {
     return environment;
   },
 
   getFunctionName: function() {
     return functionName;
-  }
+  },
+
+  AWS: AWS,
+
+  AWSXRay: AWSXRay
 }
 
 var checkRequiredParams = function(headers, body, callback) {
@@ -141,7 +242,7 @@ var checkHeaderParams = function(headers, callback) {
   } else {
     if (!headers) {
       var error = {
-        statusCode: 'InvalidParameterException',
+        code: 'InvalidParameterException',
         message: 'No headers found in the request',
         statusCode: 400
       }
@@ -158,7 +259,7 @@ var checkBodyParams = function(body, callback) {
   } else {
     if (!body) {
       var error = {
-        statusCode: 'InvalidParameterException',
+        code: 'InvalidParameterException',
         message: 'No body found in the request',
         statusCode: 400
       }
@@ -190,6 +291,24 @@ var isValue = function(value) {
   } else {
     return true;
   }
+}
+
+var XRayRecorder = function(name, segment){
+  this.name = name;
+  this.subsegment = subsegment;
+}
+
+XRayRecorder.prototype.fail = function (error) {
+  this.subsegment.addErrorFlag();
+  if (error) {
+    this.subsegment.addAnnotation(error.code, error.message);
+  }
+  this.subsegment.close()
+}
+
+XRayRecorder.prototype.succeed = function() {
+  this.subsegment.addAnnotation('success', 'all tests passed');
+  this.subsegment.close();
 }
 
 var postMessages = function() {

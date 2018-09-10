@@ -22,7 +22,7 @@ If you want to use the logError method to send error logs to a cloudwatch log gr
 
 **Note: The log group name should end with -environment. e.g. myApplication-development**
 
-Currently, there are 6 available functions:
+Available functions:
 
 **Init method:**
 
@@ -78,6 +78,30 @@ This will send a log object to the log group, below is an example where an AWS s
 }
 ```
 
+**Https request mehtod:**
+
+```
+awsLambdaHelper.httpsRequest(options, data, callback);
+```
+
+Use the https options object: https://nodejs.org/api/https.html#https_https_request_options_callback. For POST requests, enter the body in the data parameter.
+
+**Http request method:**
+
+```
+awsLambdaHelper.httpRequest(options, data, callback);
+```
+
+This method is the same as httpsRequest(above), only for http calls.
+
+**Start XRay recording method:**
+
+```
+awsLambdaHelper.startXRayRec(name, callback);
+```
+
+This method will initialize a new XRay subsegment. Use this if you want explicit tracing for a part of your lambda function. The callback will return an XRayRecorder. When you are done recording, use ``XRayRecorder.succeed()`` or ``XRayRecorder.fail()``. For the fail call, you can supply an optional error object, where error.code and error.message should be present.
+
 **Get environment method:**
 
 ```
@@ -93,6 +117,18 @@ awsLambdaHelper.getFunctionName();
 ```
 
 If the function is deployed, this will return the full function name. If your function is running locally, it will return "local-" followed by the environment variable AWS_ENVIRONMENT. If no AWS_ENVIRONMENT is available in the environment variables, the get function name method will return "local-local".  
+
+**AWS export:**
+
+```
+const { AWS } = require('@levarne/awslambdahelper');
+```
+
+**AWSXRay export:**
+
+```
+const { AWSXRay } = require('@levarne/awslambdahelper');
+```
 
 ## Simple example
 
