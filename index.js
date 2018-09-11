@@ -293,7 +293,7 @@ var isValue = function(value) {
   }
 }
 
-var XRayRecorder = function(name, segment){
+var XRayRecorder = function(name, subsegment){
   this.name = name;
   this.subsegment = subsegment;
 }
