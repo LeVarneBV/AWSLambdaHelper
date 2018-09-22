@@ -1,7 +1,7 @@
 {
   "name": "@levarne/awslambdahelper",
-  "version": "0.1.0",
-  "description": "An npm module with basic functions for AWS Lambda ",
+  "version": "1.0.0",
+  "description": "An npm module with basic functions for AWS Lambda functions",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -22,7 +22,7 @@
   },
   "homepage": "https://github.com/LeVarneBV/AWSLambdaHelper#readme",
   "dependencies": {
-    "aws-sdk": "^2.307.0",
+    "aws-sdk": "^2.320.0",
     "aws-xray-sdk": "^2.0.0"
   }
 }

@@ -4,6 +4,7 @@ const async = require('async');
 const uuidv4 = require('uuid/v4');
 const cloudwatchlogs = new AWS.CloudWatchLogs();
 const lambda = new AWS.Lambda();
+const documentClient = new AWS.DynamoDB.DocumentClient();
 const http = AWSXRay.captureHTTPs(require('http'));
 const https = AWSXRay.captureHTTPs(require('https'));
 
@@ -61,8 +62,9 @@ module.exports = {
   },
 
   invokeLambda: function(functionName, payload, callback, optionalParameters) {
+    functionName += '-' + environment
     var params = {
-      FunctionName: functionName + '-' + environment,
+      FunctionName: functionName,
       Payload: JSON.stringify(payload)
     };
 
@@ -91,6 +93,131 @@ module.exports = {
             callback(body);
           }
         }
+      }
+    });
+  },
+
+  dynamoGet: function(tableName, key, callback) {
+    tableName += '-' + environment;
+    var params = {
+      TableName : tableName,
+      Key: key
+    };
+
+    documentClient.get(params, function(err, data) {
+      if (err) {
+        console.log('Error getting item from table: ' + tableName);
+        console.log(JSON.stringify(err, null, 2));
+        module.exports.logError(err);
+        callback(err);
+      } else {
+        callback(undefined, data.Item);
+      }
+    });
+  },
+
+  dynamoPut: function(tableName, item, callback, conditionExpression, expressionAttributeNames, expressionAttributeValues) {
+    tableName += '-' + environment;
+    var params = {
+      TableName : tableName,
+      Item: item
+    };
+
+    if (conditionExpression) {
+      params.ConditionExpression = conditionExpression;
+    }
+
+    if (expressionAttributeNames) {
+      params.ExpressionAttributeNames = expressionAttributeNames;
+    }
+
+    if (expressionAttributeValues) {
+      params.ExpressionAttributeValues = expressionAttributeValues;
+    }
+
+    documentClient.put(params, function(err, data) {
+      if (err) {
+        if (err.code !== 'ConditionalCheckFailedException') {
+          console.log('Error putting item on table: ' + tableName);
+          console.log(JSON.stringify(err, null, 2));
+          module.exports.logError(err);
+        }
+        callback(err);
+      } else {
+        callback();
+      }
+    });
+  },
+
+  dynamoUpdate: function(tableName, key, updateExpression, expressionAttributeValues, callback, conditionExpression, expressionAttributeNames) {
+    tableName += '-' + environment;
+    var params = {
+      TableName: tableName,
+      Key: key,
+      UpdateExpression: updateExpression,
+      ReturnValues: 'ALL_NEW'
+    };
+
+    if (expressionAttributeNames) {
+      params.ExpressionAttributeNames = expressionAttributeNames;
+    }
+
+    if (expressionAttributeValues) {
+      params.ExpressionAttributeValues = expressionAttributeValues;
+    }
+
+    if (conditionExpression) {
+      params.ConditionExpression = conditionExpression;
+    }
+
+    documentClient.update(params, function(err, data) {
+      if (err) {
+        if (err.code !== 'ConditionalCheckFailedException') {
+          console.log('Error updating item on table: ' + tableName);
+          console.log(JSON.stringify(err, null, 2));
+          module.exports.logError(err);
+        }
+        callback(err);
+      } else {
+        callback(undefined, data.Attributes);
+      }
+    });
+  },
+
+  dynamoQuery: function(tableName, keyConditionExpression, expressionAttributeValues, callback, indexName, lastEvaluatedKey, expressionAttributeNames) {
+    tableName += '-' + environment;
+    var params = {
+      TableName: tableName,
+      KeyConditionExpression: keyConditionExpression,
+      ExpressionAttributeValues: expressionAttributeValues
+    };
+
+    if (indexName) {
+      params.IndexName = indexName;
+    }
+
+    if (expressionAttributeNames) {
+      params.ExpressionAttributeNames = expressionAttributeNames;
+    }
+
+    if (lastEvaluatedKey) {
+      params.ExclusiveStartKey = lastEvaluatedKey;
+    }
+
+    documentClient.query(params, function(err, data) {
+      if (err) {
+        console.log('Error query on table: ' + tableName);
+        console.log(JSON.stringify(err, null, 2));
+        module.exports.logError(err);
+        callback(err);
+      } else {
+        var returnObject = {
+          items: data.Items,
+          count: data.Count,
+          scannedCount: data.ScannedCount,
+          lastEvaluatedKey: data.LastEvaluatedKey
+        };
+        callback(undefined, returnObject);
       }
     });
   },
@@ -125,14 +252,9 @@ module.exports = {
 
       res.on('end', function() {
         if (res.statusCode >= 200 && res.statusCode < 300) {
-          callback(undefined, body);
+          callback(undefined, res);
         } else {
-          var error = {
-            code: 'UnexpectedLambdaException',
-            message: body,
-            statusCode: res.statusCode
-          }
-          callback(error);
+          callback(res);
         }
       });
 
@@ -167,14 +289,9 @@ module.exports = {
 
       res.on('end', function() {
         if (res.statusCode >= 200 && res.statusCode < 300) {
-          callback(undefined, body);
+          callback(undefined, res);
         } else {
-          var error = {
-            code: 'UnexpectedLambdaException',
-            message: body,
-            statusCode: res.statusCode
-          }
-          callback(error);
+          callback(res);
         }
       });
 

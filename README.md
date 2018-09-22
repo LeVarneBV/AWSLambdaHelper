@@ -48,6 +48,48 @@ awsLambdaHelper.invokeLambda(functionName, payload, callback, optionalParameters
 
 The invoke lambda method will invoke the lambda with the specified named, the stage is automatically added(so if your function is called 'my_lambda-development', invoking 'my_lambda' will automatically point to the current stage). If an error occured invoking lambda, it will be logged. If the response status code is not 2XX, the error callback will be unempty.
 
+https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Lambda.html#invoke-property
+
+**Dynamo get method:**
+
+```
+awsLambdaHelper.dynamoGet(tableName, key, callback);
+```
+
+The dynamo get method will request an item from a dynamo table. If an error occurs, it will automatically log the error. If not, it will return the item requested(check for empty value, since you might request an empty value).
+
+https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#get-property
+
+**Dynamo put method:**
+
+```
+awsLambdaHelper.dynamoPut(tableName, item, callback, conditionExpression, expressionAttributeNames, expressionAttributeValues);
+```
+
+The dynamo put method will put an item on a dynamo table. If an error occurs, and the error is not because of the condition expression, it will automatically log the error. If the condition expression is a critical error for your use case, log the error manual. If the put operation succeeds, it will return an empty callback since the put operation has no return value. The most common parameters are tableName and item, this is why the optional parameters are the last parameters of the call.
+
+https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#put-property
+
+**Dynamo update method:**
+
+```
+awsLambdaHelper.dynamoUpdate(tableName, key, updateExpression, callback, expressionAttributeNames, expressionAttributeValues, conditionExpression);
+```
+
+The dynamo update method will update an item in a dynamo table. If an error occurs, and the error is not because of the condition expression, it will automatically log the error. If the update operation succeeds, it will return the item as it is after the update operation. The most common parameters are tableName, key and updateExpression, this is why the optional parameters are the last parameters of the call.
+
+https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#update-property
+
+**Dynamo query method:**
+
+```
+awsLambdaHelper.dynamoQuery(tableName, keyConditionExpression, callback, indexName, expressionAttributeNames, expressionAttributeValues);
+```
+
+The dynamo query method will query items in a dynamo table. If an error occurs, it will automatically log the error. If the query operation succeeds, it will return items, count, scannedCount and lastEvaluatedKey. The most common parameters are tableName and keyCondtionExpression, this is why the optional parameters are the last parameters of the call.
+
+https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#query-property
+
 **Log error method:**
 
 ```
@@ -84,7 +126,7 @@ This will send a log object to the log group, below is an example where an AWS s
 awsLambdaHelper.httpsRequest(options, data, callback);
 ```
 
-Use the https options object: https://nodejs.org/api/https.html#https_https_request_options_callback. For POST requests, enter the body in the data parameter.
+Use the https options object: https://nodejs.org/api/https.html#https_https_request_options_callback. For POST requests, enter the body in the data parameter. If the request fails, an error will be logged. If the response status is not 2XX, it will callback the complete response object as an error. If the response status is 2XX, it will return the complete response object the success callback parameter.
 
 **Http request method:**
 
