@@ -83,12 +83,22 @@ https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.
 **Dynamo query method:**
 
 ```
-awsLambdaHelper.dynamoQuery(tableName, keyConditionExpression, callback, indexName, expressionAttributeNames, expressionAttributeValues);
+awsLambdaHelper.dynamoQuery(tableName, keyConditionExpression, callback, indexName, expressionAttributeNames, expressionAttributeValues, attributesToGet);
 ```
 
 The dynamo query method will query items in a dynamo table. If an error occurs, it will automatically log the error. If the query operation succeeds, it will return items, count, scannedCount and lastEvaluatedKey. The most common parameters are tableName and keyCondtionExpression, this is why the optional parameters are the last parameters of the call.
 
 https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#query-property
+
+**Dynamo scan method:**
+
+```
+awsLambdaHelper.dynamoScan(tableName, callback, indexName, lastEvaluatedKey, filterExpression, expressionAttributeNames, expressionAttributeValues, attributesToGet);
+```
+
+The dynamo scan method will scan items in a dynamo table. If an error occurs, it will automatically log the error. If the scan operation succeeds, it will return items, count, scannedCount and lastEvaluatedKey. The most common parameter is tableName, this is why the optional parameters are the last parameters of the call.
+
+https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#scan-property
 
 **Log error method:**
 

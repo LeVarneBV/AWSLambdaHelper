@@ -184,7 +184,7 @@ module.exports = {
     });
   },
 
-  dynamoQuery: function(tableName, keyConditionExpression, expressionAttributeValues, callback, indexName, lastEvaluatedKey, expressionAttributeNames) {
+  dynamoQuery: function(tableName, keyConditionExpression, expressionAttributeValues, callback, indexName, lastEvaluatedKey, expressionAttributeNames, attributesToGet) {
     tableName += '-' + environment;
     var params = {
       TableName: tableName,
@@ -204,9 +204,61 @@ module.exports = {
       params.ExclusiveStartKey = lastEvaluatedKey;
     }
 
+    if (attributesToGet) {
+      params.AttributesToGet = attributesToGet
+    }
+
     documentClient.query(params, function(err, data) {
       if (err) {
         console.log('Error query on table: ' + tableName);
+        console.log(JSON.stringify(err, null, 2));
+        module.exports.logError(err);
+        callback(err);
+      } else {
+        var returnObject = {
+          items: data.Items,
+          count: data.Count,
+          scannedCount: data.ScannedCount,
+          lastEvaluatedKey: data.LastEvaluatedKey
+        };
+        callback(undefined, returnObject);
+      }
+    });
+  },
+
+  dynamoScan: function(tableName, callback, indexName, lastEvaluatedKey, filterExpression, expressionAttributeNames, expressionAttributeValues, attributesToGet) {
+    tableName += '-' + environment;
+    var params = {
+      TableName: tableName
+    };
+
+    if (indexName) {
+      params.IndexName = indexName;
+    }
+
+    if (lastEvaluatedKey) {
+      params.ExclusiveStartKey = lastEvaluatedKey;
+    }
+
+    if (filterExpression) {
+      params.FilterExpression = filterExpression;
+    }
+
+    if (expressionAttributeNames) {
+      params.ExpressionAttributeNames = expressionAttributeNames;
+    }
+
+    if (expressionAttributeValues) {
+      params.ExpressionAttributeValues = expressionAttributeValues;
+    }
+
+    if (attributesToGet) {
+      params.AttributesToGet = attributesToGet;
+    }
+
+    documentClient.scan(params, function(err, data) {
+      if (err) {
+        console.log('Error scan on table: ' + tableName);
         console.log(JSON.stringify(err, null, 2));
         module.exports.logError(err);
         callback(err);

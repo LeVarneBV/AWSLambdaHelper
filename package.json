@@ -1,6 +1,6 @@
 {
   "name": "@levarne/awslambdahelper",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "An npm module with basic functions for AWS Lambda functions",
   "main": "index.js",
   "scripts": {
