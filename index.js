@@ -526,9 +526,6 @@ var postMessages = function() {
                 if (err) {
                   console.log('An error occured posting log messages to stream');
                   console.log(JSON.stringify(err, null, 2));
-                  callback(err);
-                } else {
-                  callback();
                 }
               });
             }
