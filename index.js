@@ -184,7 +184,7 @@ module.exports = {
     });
   },
 
-  dynamoQuery: function(tableName, keyConditionExpression, expressionAttributeValues, callback, indexName, lastEvaluatedKey, expressionAttributeNames, attributesToGet) {
+  dynamoQuery: function(tableName, keyConditionExpression, expressionAttributeValues, callback, indexName, lastEvaluatedKey, expressionAttributeNames, attributesToGet, filterExpression) {
     tableName += '-' + environment;
     var params = {
       TableName: tableName,
@@ -205,7 +205,11 @@ module.exports = {
     }
 
     if (attributesToGet) {
-      params.AttributesToGet = attributesToGet
+      params.AttributesToGet = attributesToGet;
+    }
+
+    if (filterExpression) {
+      params.FilterExpression = filterExpression;
     }
 
     documentClient.query(params, function(err, data) {
