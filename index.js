@@ -308,6 +308,7 @@ module.exports = {
 
       res.on('end', function() {
         if (res.statusCode >= 200 && res.statusCode < 300) {
+          res.body = body
           callback(undefined, res);
         } else {
           callback(res);
@@ -345,6 +346,7 @@ module.exports = {
 
       res.on('end', function() {
         if (res.statusCode >= 200 && res.statusCode < 300) {
+          res.body = body
           callback(undefined, res);
         } else {
           callback(res);
