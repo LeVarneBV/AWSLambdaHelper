@@ -83,7 +83,7 @@ https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.
 **Dynamo query method:**
 
 ```
-awsLambdaHelper.dynamoQuery(tableName, keyConditionExpression, callback, indexName, expressionAttributeNames, expressionAttributeValues, attributesToGet);
+awsLambdaHelper.dynamoQuery(tableName, keyConditionExpression, callback, indexName, expressionAttributeNames, expressionAttributeValues, attributesToGet, filterExpression);
 ```
 
 The dynamo query method will query items in a dynamo table. If an error occurs, it will automatically log the error. If the query operation succeeds, it will return items, count, scannedCount and lastEvaluatedKey. The most common parameters are tableName and keyCondtionExpression, this is why the optional parameters are the last parameters of the call.
