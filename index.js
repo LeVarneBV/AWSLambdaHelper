@@ -14,6 +14,9 @@ const requiredHeaderParams = process.env.REQUIRED_HEADER_PARAMS ? process.env.RE
 const requiredBodyParams = process.env.REQUIRED_BODY_PARAMS ? process.env.REQUIRED_BODY_PARAMS.split(',') : [];
 const logGroupName = process.env.CW_LOG_GROUP_NAME ? process.env.CW_LOG_GROUP_NAME + '-' + environment : undefined;
 
+const secretFilter = /(pass|token)/i
+const additionalSecretFilter = process.env.SECRET_RE? new RegExp(process.env.SECRET_RE): false;
+
 var logEvent;
 var logContext;
 var logMessages;
@@ -33,8 +36,8 @@ module.exports = {
     logContext = context;
     logMessages = [];
 
-    console.info('Received event:', JSON.stringify(logEvent, null, 2));
-    console.info('Received context:', JSON.stringify(logContext, null, 2));
+    console.info('Received event:', JSON.stringify(logEvent, hideVulnerableKeys, 2));
+    console.info('Received context:', JSON.stringify(logContext, hideVulnerableKeys, 2));
 
     checkRequiredParams(event.headers, event.body, callback)
   },
@@ -49,7 +52,7 @@ module.exports = {
       body: JSON.stringify(body)
     }
 
-    console.info('Response:', JSON.stringify(response, null, 2));
+    console.info('Response:', JSON.stringify(response, hideVulnerableKeys, 2));
     console.timeEnd(functionName);
 
     if (statusCode >= 500) {
@@ -540,4 +543,12 @@ var postMessages = function() {
       });
     }
   }
+}
+
+function hideVulnerableKeys(key, val) {
+  if(typeof val === 'string' && secretFilter.test(key))
+    return "***"
+  if(additionalSecretFilter && additionalSecretFilter.test(key))
+    return "***"
+  return val
 }
