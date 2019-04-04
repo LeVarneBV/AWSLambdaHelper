@@ -27,8 +27,9 @@ module.exports = {
     }
 
     logEvent = JSON.parse(JSON.stringify(event));
-    if (logEvent.body && logEvent.body.password) {
-      logEvent.body.password = '*****';
+    if (logEvent.body) {
+      logEvent.body.password ? logEvent.body.password = '*****' : undefined;
+      logEvent.body.newPassword ? logEvent.body.newPassword = '*****' : undefined;
     }
     logContext = context;
     logMessages = [];
